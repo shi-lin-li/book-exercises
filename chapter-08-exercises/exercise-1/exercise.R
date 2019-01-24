@@ -1,10 +1,10 @@
 # Exercise 1: creating and accessing lists
 
 # Create a vector `my_breakfast` of everything you ate for breakfast
-
+my_breakfast <- "Apple"
 
 # Create a vector `my_lunch` of everything you ate (or will eat) for lunch
-
+my_lunch <- "salad"
 
 # Create a list `meals` that has contains your breakfast and lunch
 
