@@ -1,34 +1,53 @@
 # Exercise 1: analyzing avocado sales with the `tidyr` package
 
 # Load necessary packages (`tidyr`, `dplyr`, and `ggplot2`)
-
+install.packages("tidyr")
+install.packages("dplyr")
+install.packages("ggplot2")
+library(tidyr)
+library(dplyr)
+library(ggplot2)
 
 # Set your working directory using the RStudio menu:
 # Session > Set Working Directory > To Source File Location
 
 # Load the `data/avocado.csv` file into a variable `avocados`
 # Make sure strings are *not* read in as factors
-
+avocados <- read.csv(file = "data/avocado.csv", header = TRUE, 
+                    stringsAsFactors = FALSE)
+View(avocados)
 
 # To tell R to treat the `Date` column as a date (not just a string)
 # Redefine that column as a date using the `as.Date()` function
 # (hint: use the `mutate` function)
+mutate(avocados, Date = as.Date(avocados$Date, "%Y/%m/%d"))
+View(avocado)
 
 
 # The file had some uninformative column names, so rename these columns:
 # `X4046` to `small_haas`
 # `X4225` to `large_haas`
 # `X4770` to `xlarge_haas`
-
+mutate(avocado, year = as.numeric(substr(year, 5, 7)))
+colnames(avocado)[colnames(avocado) == "X4046"] <- "small_haas"
+colnames(avocado)[colnames(avocado) == "X4225"] <- "large_haas"
+colnames(avocado)[colnames(avocado) == "X4770"] <- "xlarge_haas"
 
 # The data only has sales for haas avocados. Create a new column `other_avos`
 # that is the Total.Volume minus all haas avocados (small, large, xlarge)
-
+avocados <- mutate(avocado, other_avos = Total.Volume - (small_haas+large_haas+xlarge_haas))
+View(avocados)
 
 # To perform analysis by avocado size, create a dataframe `by_size` that has
 # only `Date`, `other_avos`, `small_haas`, `large_haas`, `xlarge_haas`
-
-
+by_size <- data.frame(
+  Date = avocados$Date,
+  small_haas = avocados$small_haas,
+  large_haas = avocados$large_haas,
+  xlarge_haas = avocados$xlarge_haas,
+  other_avos = avocados$other_avos
+)
+View(by_size)
 # In order to visualize this data, it needs to be reshaped. The four columns
 # `other_avos`, `small_haas`, `large_haas`, `xlarge_haas` need to be 
 # **gathered** together into a single column called `size`. The volume of sales
@@ -36,12 +55,21 @@
 # `volume`. Create a new dataframe `size_gathered` by passing the `by_size` 
 # data frame to the `gather()` function. `size_gathered` will only have 3 
 # columns: `Date`, `size`, and `volume`.
-
+size_gathered <- gather(
+  by_size,
+  key = size,
+  value = volume,
+  -Date
+)
+View(size_gathered)
 
 # Using `size_gathered`, compute the average sales volume of each size 
 # (hint, first `group_by` size, then compute using `summarize`)
-
-
+avg_vol <- size_gathered %>% 
+  group_by(size) %>% 
+  summarise(mean(volume, na.rm = TRUE)
+)
+View(avg_vol)
 # This shape also facilitates the visualization of sales over time
 # (how to write this code is covered in Chapter 16)
 ggplot(size_gathered) +
@@ -52,13 +80,38 @@ ggplot(size_gathered) +
 # Create a new data frame `by_type` by grouping the `avocados` dataframe by
 # `Date` and `type`, and calculating the sum of the `Total.Volume` for that type
 # in that week (resulting in a data frame with 2 rows per week).
+by_type_pre <- data.frame(
+  Date = avocados$Date,
+  type = avocados$type,
+  Total.Volume = avocados$Total.Volume
+)
 
+
+organic <- filter(by_type_pre, type == "organic")
+organic_tot<-organic %>% 
+  group_by(Date) %>% 
+  summarise(sum(Total.Volume, na.rm = TRUE))
+by_type_pre3 <- spread(
+  by_type_pre,
+  key = Date,
+  value = Total.Volume
+)
+View(by_type_pre3)
+type_tot <- by_type %>% 
+  group_by(type) %>% 
+  summarise(sum(Total.Volume, na.rm = TRUE))
+View(type_tot)
 
 # To make a (visual) comparison of conventional versus organic sales, you 
 # need to **spread** out the `type` column into two different columns. Create a 
 # new data frame `by_type_wide` by passing the `by_type` data frame to 
 # the `spread()` function!
-
+by_type_wide <- spread(
+  by_type,
+  key = type,
+  value = volume
+  
+)
 
 # Now you can create a scatterplot comparing conventional to organic sales!
 # (how to write this code is covered in Chapter 16)
