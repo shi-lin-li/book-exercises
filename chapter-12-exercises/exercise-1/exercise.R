@@ -21,32 +21,28 @@ View(avocados)
 # Redefine that column as a date using the `as.Date()` function
 # (hint: use the `mutate` function)
 mutate(avocados, Date = as.Date(avocados$Date, "%Y/%m/%d"))
-View(avocado)
+View(avocados)
 
 
 # The file had some uninformative column names, so rename these columns:
 # `X4046` to `small_haas`
 # `X4225` to `large_haas`
 # `X4770` to `xlarge_haas`
-mutate(avocado, year = as.numeric(substr(year, 5, 7)))
-colnames(avocado)[colnames(avocado) == "X4046"] <- "small_haas"
-colnames(avocado)[colnames(avocado) == "X4225"] <- "large_haas"
-colnames(avocado)[colnames(avocado) == "X4770"] <- "xlarge_haas"
+mutate(avocados, year = as.numeric(substr(year, 5, 7)))
+colnames(avocados)[colnames(avocados) == "X4046"] <- "small_haas"
+colnames(avocados)[colnames(avocados) == "X4225"] <- "large_haas"
+colnames(avocados)[colnames(avocados) == "X4770"] <- "xlarge_haas"
 
 # The data only has sales for haas avocados. Create a new column `other_avos`
 # that is the Total.Volume minus all haas avocados (small, large, xlarge)
-avocados <- mutate(avocado, other_avos = Total.Volume - (small_haas+large_haas+xlarge_haas))
+avocados <- mutate(avocados, other_avos = Total.Volume - (small_haas+large_haas+xlarge_haas))
 View(avocados)
 
 # To perform analysis by avocado size, create a dataframe `by_size` that has
 # only `Date`, `other_avos`, `small_haas`, `large_haas`, `xlarge_haas`
-by_size <- data.frame(
-  Date = avocados$Date,
-  small_haas = avocados$small_haas,
-  large_haas = avocados$large_haas,
-  xlarge_haas = avocados$xlarge_haas,
-  other_avos = avocados$other_avos
-)
+by_size <- avocados %>% 
+  select(Date, other_avos, small_haas, large_haas, xlarge_haas)
+
 View(by_size)
 # In order to visualize this data, it needs to be reshaped. The four columns
 # `other_avos`, `small_haas`, `large_haas`, `xlarge_haas` need to be 
@@ -67,8 +63,8 @@ View(size_gathered)
 # (hint, first `group_by` size, then compute using `summarize`)
 avg_vol <- size_gathered %>% 
   group_by(size) %>% 
-  summarise(mean(volume, na.rm = TRUE)
-)
+  summarise(mean_volume = mean(volume))
+
 View(avg_vol)
 # This shape also facilitates the visualization of sales over time
 # (how to write this code is covered in Chapter 16)
@@ -80,39 +76,21 @@ ggplot(size_gathered) +
 # Create a new data frame `by_type` by grouping the `avocados` dataframe by
 # `Date` and `type`, and calculating the sum of the `Total.Volume` for that type
 # in that week (resulting in a data frame with 2 rows per week).
-by_type_pre <- data.frame(
-  Date = avocados$Date,
-  type = avocados$type,
-  Total.Volume = avocados$Total.Volume
-)
 
+# Create a new data frame with only columns date, type, and volume.
+by_type <- avocados %>% 
+  group_by(Date, type) %>% 
+  summarise(volume = sum(Total.Volume))
 
-organic <- filter(by_type_pre, type == "organic")
-organic_tot<-organic %>% 
-  group_by(Date) %>% 
-  summarise(sum(Total.Volume, na.rm = TRUE))
-by_type_pre3 <- spread(
-  by_type_pre,
-  key = Date,
-  value = Total.Volume
-)
-View(by_type_pre3)
-type_tot <- by_type %>% 
-  group_by(type) %>% 
-  summarise(sum(Total.Volume, na.rm = TRUE))
-View(type_tot)
 
 # To make a (visual) comparison of conventional versus organic sales, you 
 # need to **spread** out the `type` column into two different columns. Create a 
 # new data frame `by_type_wide` by passing the `by_type` data frame to 
 # the `spread()` function!
-by_type_wide <- spread(
-  by_type,
-  key = type,
-  value = volume
-  
-)
+by_type_wide <- by_type %>% 
+  spread(key = type, value = volume)
 
+View(by_type_wide)
 # Now you can create a scatterplot comparing conventional to organic sales!
 # (how to write this code is covered in Chapter 16)
 ggplot(by_type_wide) +
