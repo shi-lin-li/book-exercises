@@ -5,7 +5,15 @@ library("shiny")
 #   You will use `shinyUI()` to render this variable (bottom of the script)
 # Give the layout a title of "Income Inequality".
 # The layout should include the following elements:
-
+my_ui <- fluidPage(
+  tabPanel("Introduction",
+    titlePanel("Income Inequality"),
+    p("The below diagram was created by the New York Times to illustrate the 
+      increasing level of inequality in the US."),
+    img(src = "www/inequality.png"),
+    a(href = "https://www.nytimes.com/interactive/2017/08/07/opinion/leonhardt-income-inequality.html")
+  )
+)
 
   # A `tabPanel()` with a title "Introduction" to represent the first tab.
   # This layout will contain the following elements:
