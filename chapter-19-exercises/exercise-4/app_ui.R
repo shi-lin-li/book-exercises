@@ -5,15 +5,39 @@ library("shiny")
 #   You will use `shinyUI()` to render this variable (bottom of the script)
 # Give the layout a title of "Income Inequality".
 # The layout should include the following elements:
-my_ui <- fluidPage(
+my_ui <- navbarPage(
   tabPanel("Introduction",
     titlePanel("Income Inequality"),
     p("The below diagram was created by the New York Times to illustrate the 
       increasing level of inequality in the US."),
     img(src = "www/inequality.png"),
-    a(href = "https://www.nytimes.com/interactive/2017/08/07/opinion/leonhardt-income-inequality.html")
+    p(a(href = "https://www.nytimes.com/interactive/2017/08/07/opinion/leonhardt-income-inequality.html")),
+    
+    p("The graph shows how the richest 1% of people have a income 
+      jump", strong("6%"), "since 1980", "while the majority of others have", 
+      em("no income jump.")),
+      
+    tabPanel(
+      "Growth Chart",
+      titlePanel("Income growth 1980-2014"),
+      
+      sidebarLayout(
+        sidebarPanel(
+          sliderInput("percentile", label = "Income Percentile", min = 0, 
+                      max = 100, value = c(0, 100))
+        ),
+        
+      mainPanel(
+        plotOutput("plot"),
+        
+        p("Source", a(herf = "http://gabriel-zucman.eu/usdina/"))
+      )
+      )
+    )
   )
+  
 )
+
 
   # A `tabPanel()` with a title "Introduction" to represent the first tab.
   # This layout will contain the following elements:
